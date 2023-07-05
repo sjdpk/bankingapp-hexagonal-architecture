@@ -2,10 +2,11 @@ package domain
 
 import (
 	"database/sql"
-	"errors"
 	"log"
+	"net/http"
 
 	_ "github.com/lib/pq"
+	"github.com/sjdpk/bankingapp/errs"
 )
 
 type CustomerRepositoryDB struct {
@@ -30,18 +31,16 @@ func (d CustomerRepositoryDB) FindAll() ([]Customer, error) {
 	return customers, nil
 }
 
-func (d CustomerRepositoryDB) ById(id string) (*Customer, error) {
+func (d CustomerRepositoryDB) ById(id string) (*Customer, *errs.AppError) {
 	findByIdQuery := `select customer_id, name, city, zipcode, date_of_birth, status from customers where customer_id=$1`
 	var c Customer
 	row := d.client.QueryRow(findByIdQuery, id)
 	err := row.Scan(&c.ID, &c.Name, &c.City, &c.Zipcode, &c.DateofBirth, &c.Status)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// log.Println("Error while scanning customer " + err.Error())
-			return nil, errors.New("customer not found")
+			return nil, errs.HandleError(http.StatusNotFound, "customer not found")
 		} else {
-			return nil, errors.New("Unexpected database error")
-
+			return nil, errs.HandleError(http.StatusInternalServerError, "unexpected database error")
 		}
 
 	}
