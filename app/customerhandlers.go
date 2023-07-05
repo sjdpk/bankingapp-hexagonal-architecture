@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -26,11 +25,16 @@ func (ch *CustomerHandler) getCustomer(w http.ResponseWriter, r *http.Request) {
 	id := vars["customer_id"]
 	customer, err := ch.service.GetCustomer(id)
 	if err != nil {
-		w.WriteHeader(err.Code)
-		fmt.Fprintf(w, err.Message)
-
+		WriteResponse(w, err.Code, err)
 	} else {
-		w.Header().Add("Content-Tye", "application/json")
-		json.NewEncoder(w).Encode(customer)
+		WriteResponse(w, http.StatusOK, customer)
+	}
+}
+
+func WriteResponse(w http.ResponseWriter, code int, data interface{}) {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(code)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		panic(err)
 	}
 }

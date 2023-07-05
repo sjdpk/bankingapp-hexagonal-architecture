@@ -1,8 +1,8 @@
 package errs
 
 type AppError struct {
-	Code    int
-	Message string
+	Code    int    `json:"-"`
+	Message string `json:"message"`
 }
 
 func HandleError(code int, msg string) *AppError {
