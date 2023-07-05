@@ -2,6 +2,7 @@ package domain
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 
 	_ "github.com/lib/pq"
@@ -35,8 +36,14 @@ func (d CustomerRepositoryDB) ById(id string) (*Customer, error) {
 	row := d.client.QueryRow(findByIdQuery, id)
 	err := row.Scan(&c.ID, &c.Name, &c.City, &c.Zipcode, &c.DateofBirth, &c.Status)
 	if err != nil {
-		log.Println("Error while scanning customer " + err.Error())
-		return nil, err
+		if err == sql.ErrNoRows {
+			// log.Println("Error while scanning customer " + err.Error())
+			return nil, errors.New("customer not found")
+		} else {
+			return nil, errors.New("Unexpected database error")
+
+		}
+
 	}
 	return &c, nil
 }
