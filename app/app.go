@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -14,12 +13,11 @@ func Start() {
 	router := mux.NewRouter()
 
 	// wiring
-	ch := CustomerHandler{service: service.NewCustomerService(domain.NewCustomerRepositoryStub())}
+	// ch := CustomerHandler{service: service.NewCustomerService(domain.NewCustomerRepositoryStub())}
+	ch := CustomerHandler{service: service.NewCustomerService(domain.NewCustomerRepositoryDB())}
+
 	router.HandleFunc("/", ch.getAllCustomers).Methods(http.MethodGet)
+	router.HandleFunc("/{customer_id:[0-9]+}", ch.getCustomer).Methods(http.MethodGet)
 
 	log.Fatal(http.ListenAndServe("localhost:8000", router))
-}
-
-func greet(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello THere")
 }

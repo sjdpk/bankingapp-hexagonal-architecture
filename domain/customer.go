@@ -1,7 +1,7 @@
 package domain
 
 type Customer struct {
-	ID          string
+	ID          string `db:"customer_id"`
 	Name        string
 	City        string
 	Zipcode     string
@@ -11,4 +11,5 @@ type Customer struct {
 
 type CustomerRepository interface {
 	FindAll() ([]Customer, error)
+	ById(string) (*Customer, error)
 }
