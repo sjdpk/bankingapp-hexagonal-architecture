@@ -7,6 +7,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/sjdpk/bankingapp/errs"
+	"github.com/sjdpk/bankingapp/logger"
 )
 
 type CustomerRepositoryDB struct {
@@ -28,12 +29,14 @@ func (d CustomerRepositoryDB) FindAll(status string) ([]Customer, *errs.AppError
 	}
 
 	if err != nil {
+		logger.Error("unexpected database error: " + err.Error())
 		return nil, errs.HandleError(http.StatusInternalServerError, "unexpected database error")
 	}
 	for rows.Next() {
 		var c Customer
 		err := rows.Scan(&c.ID, &c.Name, &c.City, &c.Zipcode, &c.DateofBirth, &c.Status)
 		if err != nil {
+			logger.Error("unexpected database error: " + err.Error())
 			return nil, errs.HandleError(http.StatusInternalServerError, "unexpected database error")
 		}
 		customers = append(customers, c)
@@ -50,6 +53,7 @@ func (d CustomerRepositoryDB) ById(id string) (*Customer, *errs.AppError) {
 		if err == sql.ErrNoRows {
 			return nil, errs.HandleError(http.StatusNotFound, "customer not found")
 		} else {
+			logger.Error("unexpected database error: " + err.Error())
 			return nil, errs.HandleError(http.StatusInternalServerError, "unexpected database error")
 		}
 
