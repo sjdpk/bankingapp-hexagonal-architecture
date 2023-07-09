@@ -5,41 +5,34 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/sjdpk/bankingapp/errs"
 	"github.com/sjdpk/bankingapp/logger"
 )
 
 type CustomerRepositoryDB struct {
-	client *sql.DB
+	client *sqlx.DB
 }
 
 func (d CustomerRepositoryDB) FindAll(status string) ([]Customer, *errs.AppError) {
 	var (
-		rows *sql.Rows
-		err  error
+		// rows *sql.Rows
+		err error
 	)
 	customers := make([]Customer, 0)
+
 	if status != "" {
 		findAllQuery := "select customer_id, name, city, zipcode, date_of_birth, status from customers where status= $1"
-		rows, err = d.client.Query(findAllQuery, status)
+		err = d.client.Select(&customers, findAllQuery, status)
 	} else {
 		findAllQuery := "select customer_id, name, city, zipcode, date_of_birth, status from customers"
-		rows, err = d.client.Query(findAllQuery)
-	}
+		err = d.client.Select(&customers, findAllQuery)
 
+	}
 	if err != nil {
 		logger.Error("unexpected database error: " + err.Error())
 		return nil, errs.HandleError(http.StatusInternalServerError, "unexpected database error")
-	}
-	for rows.Next() {
-		var c Customer
-		err := rows.Scan(&c.ID, &c.Name, &c.City, &c.Zipcode, &c.DateofBirth, &c.Status)
-		if err != nil {
-			logger.Error("unexpected database error: " + err.Error())
-			return nil, errs.HandleError(http.StatusInternalServerError, "unexpected database error")
-		}
-		customers = append(customers, c)
 	}
 	return customers, nil
 }
@@ -47,8 +40,7 @@ func (d CustomerRepositoryDB) FindAll(status string) ([]Customer, *errs.AppError
 func (d CustomerRepositoryDB) ById(id string) (*Customer, *errs.AppError) {
 	findByIdQuery := `select customer_id, name, city, zipcode, date_of_birth, status from customers where customer_id=$1`
 	var c Customer
-	row := d.client.QueryRow(findByIdQuery, id)
-	err := row.Scan(&c.ID, &c.Name, &c.City, &c.Zipcode, &c.DateofBirth, &c.Status)
+	err := d.client.Get(&c, findByIdQuery, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errs.HandleError(http.StatusNotFound, "customer not found")
@@ -63,7 +55,7 @@ func (d CustomerRepositoryDB) ById(id string) (*Customer, *errs.AppError) {
 
 func NewCustomerRepositoryDB() CustomerRepositoryDB {
 	connStr := `postgres://iamdpk:iamdpk@localhost:5432/bankingapp?sslmode=disable`
-	client, err := sql.Open("postgres", connStr)
+	client, err := sqlx.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
