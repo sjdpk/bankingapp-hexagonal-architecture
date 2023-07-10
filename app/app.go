@@ -37,8 +37,8 @@ func Start() {
 	// ch := CustomerHandler{service: service.NewCustomerService(domain.NewCustomerRepositoryStub())}
 	ch := CustomerHandler{service: service.NewCustomerService(domain.NewCustomerRepositoryDB())}
 
-	router.HandleFunc("/", ch.getAllCustomers).Methods(http.MethodGet)
-	router.HandleFunc("/{customer_id:[0-9]+}", ch.getCustomer).Methods(http.MethodGet)
+	router.HandleFunc("/customer", ch.getAllCustomers).Methods(http.MethodGet)
+	router.HandleFunc("/customer/{customer_id:[0-9]+}", ch.getCustomer).Methods(http.MethodGet)
 	serverAddr := os.Getenv("SERVER_ADDR")
 	serverPort := os.Getenv("SERVER_PORT")
 	serverAddrPort := fmt.Sprintf("%s:%s", serverAddr, serverPort)
