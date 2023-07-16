@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS customers (
-    customer_id bigserial PRIMARY KEY,
+    customer_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     date_of_birth date NOT NULL,
     city VARCHAR(100) NOT NULL,

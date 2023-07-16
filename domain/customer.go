@@ -21,6 +21,7 @@ func (c Customer) statusAsText() string {
 	}
 	return statusAsText
 }
+
 func (c Customer) ToDTO() dto.CustomerResponse {
 
 	return dto.CustomerResponse{

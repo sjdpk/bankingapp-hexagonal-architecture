@@ -2,10 +2,7 @@ package domain
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
 	"net/http"
-	"os"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -55,19 +52,7 @@ func (d CustomerRepositoryDB) ById(id string) (*Customer, *errs.AppError) {
 	return &c, nil
 }
 
-func NewCustomerRepositoryDB() CustomerRepositoryDB {
-	dbDriver := os.Getenv("DB")
-	dbUser := os.Getenv("DB_USER")
-	dbPasswd := os.Getenv("DB_PASS")
-	dbAddr := os.Getenv("DB_ADDR")
-	dbPort := os.Getenv("DB_PORT")
-	dbName := os.Getenv("DB_NAME")
-	dbUrl := fmt.Sprintf("%s://%s:%s@%s:%s/%s", dbDriver, dbUser, dbPasswd, dbAddr, dbPort, dbName)
-	// connStr := `postgres://iamdpk:iamdpk@localhost:5432/bankingapp?sslmode=disable`
-	connStr := dbUrl + `?sslmode=disable`
-	client, err := sqlx.Open(dbDriver, connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return CustomerRepositoryDB{client}
+func NewCustomerRepositoryDB(dbClient *sqlx.DB) CustomerRepositoryDB {
+
+	return CustomerRepositoryDB{dbClient}
 }
